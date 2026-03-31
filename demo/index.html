@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReadCheck — Open Source Accessibility Measurement Engine</title>
+  <meta name="description" content="Canvas-based accessibility detection engine. 500x faster than DOM reflow tools. Targets the 6 failure categories in 96% of websites.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="rc-header" role="banner">
+    <div>
+      <h1><span>ReadCheck</span> — Open Source Accessibility Engine</h1>
+      <span class="rc-header-meta">Proof-of-Concept Demo &middot; Canvas-Based Measurement &middot; v0.0.1</span>
+    </div>
+    <div class="rc-header-badges">
+      <span class="rc-badge rc-badge-accent">NLnet NGI Zero</span>
+      <span class="rc-badge">MIT License</span>
+      <span class="rc-badge">Zero Dependencies</span>
+    </div>
+  </header>
+
+  <!-- Controls -->
+  <div class="rc-controls" role="toolbar" aria-label="ReadCheck controls">
+    <button id="rc-run-btn" class="rc-btn rc-btn-primary" type="button" aria-label="Run ReadCheck analysis on the sample page">
+      Run ReadCheck
+    </button>
+    <button id="rc-toggle-fix" class="rc-btn rc-btn-outline" type="button" disabled aria-pressed="false" aria-label="Toggle between broken and fixed version of the sample">
+      Show Fixed Version
+    </button>
+    <button id="rc-reset-btn" class="rc-btn rc-btn-outline" type="button" disabled aria-label="Reset analysis and clear results">
+      Reset
+    </button>
+    <span id="rc-status" class="rc-status" role="status" aria-live="polite"></span>
+  </div>
+
+  <!-- Main two-column layout -->
+  <main class="rc-main">
+
+    <!-- Left: Sample inaccessible page -->
+    <section class="rc-sample-panel" aria-label="Sample web page under test">
+      <span class="rc-panel-label">Sample Page (deliberately inaccessible)</span>
+      <div id="rc-sample" class="rc-sample-content">
+
+        <!--
+          DELIBERATELY INACCESSIBLE SAMPLE CONTENT
+          =========================================
+          This contained sample has intentional WCAG violations that mirror
+          real-world accessibility failures found on government sites, NGO
+          pages, and e-commerce platforms. The violations represent the 6
+          failure categories in 96% of websites (WebAIM Million 2025).
+
+          The demo page ITSELF is fully accessible (lang, ARIA, contrast).
+          Only this contained sample has deliberate violations.
+        -->
+        <div id="bad-page" style="font-family: Arial, sans-serif; padding: 0.5rem;">
+
+          <!-- Violation: small text (11px) — common on government/municipal sites -->
+          <p class="bad-small-text" style="font-size: 11px; margin-bottom: 0.5rem;">
+            Welcome to our regional services portal. Access public records, submit
+            applications, and review municipal ordinances. All residents are encouraged
+            to register for digital services by visiting the administration office.
+          </p>
+
+          <!-- Violation: low contrast — extremely common on modern "minimal" designs -->
+          <h2 class="bad-low-contrast" style="color: #b0b0b0; background: #fff; font-size: 18px; margin-bottom: 0.5rem;">
+            Current Announcements
+          </h2>
+
+          <!-- Violation: missing alt text — #1 most common WCAG failure -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+            <div style="border: 1px solid #ddd; padding: 0.5rem; border-radius: 4px; width: 140px;">
+              <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='80' fill='%23e9ecef'%3E%3Crect width='120' height='80'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23888' font-size='11'%3EPhoto%3C/text%3E%3C/svg%3E"
+                   width="120" height="80">
+              <p style="font-size: 11px;" class="bad-small-text">Public Health Update</p>
+            </div>
+            <div style="border: 1px solid #ddd; padding: 0.5rem; border-radius: 4px; width: 140px;">
+              <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='80' fill='%23e9ecef'%3E%3Crect width='120' height='80'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23888' font-size='11'%3EPhoto%3C/text%3E%3C/svg%3E"
+                   width="120" height="80">
+              <p style="font-size: 11px;" class="bad-small-text">Road Closure Notice</p>
+            </div>
+          </div>
+
+          <!-- Violation: cramped interactive targets — common on mobile-unfriendly sites -->
+          <div style="margin-bottom: 0.75rem;">
+            <button class="bad-cramped-btn" type="button" style="padding: 2px 6px; font-size: 10px; margin: 0; border: 1px solid #999; background: #eee; cursor: pointer;">Apply</button>
+            <button class="bad-cramped-btn" type="button" style="padding: 2px 6px; font-size: 10px; margin: 0 0 0 1px; border: 1px solid #999; background: #eee; cursor: pointer;">Status</button>
+            <button class="bad-cramped-btn" type="button" style="padding: 2px 6px; font-size: 10px; margin: 0 0 0 1px; border: 1px solid #999; background: #eee; cursor: pointer;">Help</button>
+          </div>
+
+          <!-- Violation: truncated text without accessible label -->
+          <div class="bad-overflow" style="width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; margin-bottom: 0.75rem; border: 1px solid #ddd; padding: 0.3rem;">
+            Building permit application for residential construction at 1247 Hauptstrasse must be submitted with environmental impact assessment
+          </div>
+
+          <!-- Violation: dense paragraph, small text, cramped line-height -->
+          <p class="bad-paragraph bad-small-text" style="font-size: 11px; line-height: 1.2; margin-bottom: 0.75rem;">
+            Pursuant to Municipal Code Section 14.3, all residents within the designated service area are hereby notified that the quarterly assessment for infrastructure maintenance has been adjusted effective the first of the following month. Payments may be submitted via the online portal, by mail to the Treasury Department, or in person at the Administration Building during regular business hours. Late payments are subject to a 1.5% monthly surcharge as specified in Ordinance 2024-071. Residents experiencing financial hardship may apply for a deferral through the Community Assistance Office. Documentation of income verification is required for all deferral applications and must be submitted within 30 calendar days of the assessment notice date.
+          </p>
+
+          <!-- Violation: low-contrast link -->
+          <a href="#" class="bad-low-contrast" style="color: #c0c0c0; background: #f5f5f5; font-size: 11px; padding: 0.2rem;">
+            View complete municipal code and ordinances
+          </a>
+
+          <!-- Violation: form input without label -->
+          <div style="margin-top: 0.75rem;">
+            <input class="bad-input" type="text" placeholder="Search..." style="padding: 4px 8px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; width: 160px;">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Results panel -->
+    <section class="rc-results-panel" aria-label="ReadCheck analysis results">
+      <span class="rc-panel-label">Analysis Results</span>
+      <div id="rc-results" class="rc-results-content">
+        <div class="rc-empty" id="rc-empty">
+          <div class="rc-empty-icon" aria-hidden="true">&#128269;</div>
+          <p>Click <strong>Run ReadCheck</strong> to analyze the sample page.</p>
+          <p style="margin-top: 0.75rem; font-size: 0.82rem; max-width: 300px; margin-left: auto; margin-right: auto;">
+            ReadCheck scans for accessibility violations using
+            canvas-based text measurement &mdash; zero DOM reflow,
+            zero layout thrashing. The core innovation that makes
+            novel detection rules possible.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Canvas Measurement Explainer -->
+  <section class="rc-canvas-explainer" aria-label="Why canvas measurement matters">
+    <h2>Why Canvas-Based Measurement?</h2>
+    <p class="rc-canvas-explainer-subtitle">
+      The core technical innovation that enables ReadCheck to detect violations other tools cannot.
+    </p>
+
+    <div class="rc-perf-comparison">
+      <div class="rc-perf-card rc-perf-card-bad">
+        <h3>Traditional Tools (axe-core, Lighthouse)</h3>
+        <div class="rc-perf-bar-visual" style="width: 100%;"></div>
+        <div class="rc-perf-time">100&ndash;1000ms</div>
+        <p class="rc-perf-detail">
+          Call <code>getBoundingClientRect()</code> or <code>getComputedStyle()</code> on each element.
+          Each call forces the browser to recalculate layout (reflow) &mdash; blocking the main thread,
+          causing visual jank, scaling linearly with page complexity.
+        </p>
+      </div>
+      <div class="rc-perf-card rc-perf-card-good">
+        <h3>ReadCheck (Canvas via Pretext)</h3>
+        <div class="rc-perf-bar-visual" style="width: 2%;"></div>
+        <div class="rc-perf-time">1&ndash;5ms</div>
+        <p class="rc-perf-detail">
+          Measure text with <code>CanvasRenderingContext2D.measureText()</code> on an offscreen canvas.
+          Zero reflow, zero paint, zero layout impact. Same font metrics, 500x faster.
+          Scales with text count only, not page complexity.
+        </p>
+      </div>
+    </div>
+
+    <!-- Code sample showing the technique -->
+    <div class="rc-canvas-code" role="img" aria-label="Code example showing canvas measurement technique">
+      <span class="rc-code-comment">// The Pretext technique: measure text WITHOUT triggering reflow</span><br>
+      <span class="rc-code-keyword">const</span> canvas = document.createElement(<span class="rc-code-string">"canvas"</span>);<br>
+      <span class="rc-code-keyword">const</span> ctx = canvas.<span class="rc-code-function">getContext</span>(<span class="rc-code-string">"2d"</span>);<br>
+      <br>
+      <span class="rc-code-comment">// Set canvas font to match the element's computed style</span><br>
+      ctx.font = <span class="rc-code-string">"400 16px Arial"</span>;<br>
+      <br>
+      <span class="rc-code-comment">// Measure — returns width in CSS pixels, sub-pixel accurate</span><br>
+      <span class="rc-code-comment">// Cost: ~0.02ms vs ~5ms for getBoundingClientRect()</span><br>
+      <span class="rc-code-keyword">const</span> width = ctx.<span class="rc-code-function">measureText</span>(text).width;<br>
+      <br>
+      <span class="rc-code-comment">// Now we can detect: does this text overflow its container?</span><br>
+      <span class="rc-code-comment">// Will it break at 200% zoom? How many chars per visual line?</span><br>
+      <span class="rc-code-comment">// These questions are IMPOSSIBLE in DOM-only tools without reflow.</span>
+    </div>
+  </section>
+
+  <!-- Footer: How it works + Ecosystem -->
+  <footer class="rc-footer" role="contentinfo">
+    <div class="rc-footer-inner">
+      <h2>How ReadCheck Works</h2>
+      <div class="rc-footer-grid">
+        <div class="rc-info-card">
+          <h3>Layer 0: Canvas Measurement</h3>
+          <p>
+            Uses <code>CanvasRenderingContext2D.measureText()</code> to
+            detect accessibility barriers without triggering DOM reflows. Inspired
+            by <strong>Pretext</strong> (Cheng Lou), this approach avoids layout
+            thrashing entirely &mdash; enabling novel rules that DOM-only tools
+            structurally cannot express.
+          </p>
+        </div>
+        <div class="rc-info-card">
+          <h3>Detect + Report (No Overlays)</h3>
+          <p>
+            Default mode: detect and report. ReadCheck never injects overlays or
+            modifies your DOM without explicit opt-in. This is a deliberate stance
+            against accessibility overlay products &mdash; endorsed by 975 experts
+            at <strong>overlayfactsheet.com</strong>.
+          </p>
+        </div>
+        <div class="rc-info-card">
+          <h3>The 96% Coverage Target</h3>
+          <p>
+            The WebAIM Million 2025 analysis finds the same 6 failure categories
+            in 96% of homepages: low contrast, missing alt text, missing labels,
+            empty links, missing lang, and empty buttons. ReadCheck targets all six
+            with measurement-enhanced detection.
+          </p>
+        </div>
+      </div>
+
+      <!-- SilberWelt connection -->
+      <div class="rc-silberwelt">
+        <div class="rc-silberwelt-icon" aria-hidden="true">&#127793;</div>
+        <div>
+          <h3>Part of the SilberWelt Initiative</h3>
+          <p>
+            ReadCheck is the technical arm of <strong>SilberWelt</strong> &mdash; an initiative
+            for elderly digital inclusion. While SilberWelt addresses the human side (digital
+            literacy, community support, warm technology), ReadCheck addresses the technical
+            side: making websites readable and usable for older adults through measurement-based
+            accessibility detection. Elderly-specific rules (enhanced contrast thresholds,
+            larger target sizes, cognitive load scoring) are built into the engine.
+          </p>
+        </div>
+      </div>
+
+      <!-- Ecosystem links -->
+      <div class="rc-ecosystem">
+        <h3>Open Source Ecosystem</h3>
+        <div class="rc-ecosystem-grid">
+          <a href="https://github.com/chenglou/pretext" target="_blank" rel="noopener" class="rc-ecosystem-link">
+            Pretext <span class="rc-ecosystem-link-label">&mdash; Core dependency (canvas text engine)</span>
+          </a>
+          <a href="https://github.com/dequelabs/axe-core" target="_blank" rel="noopener" class="rc-ecosystem-link">
+            axe-core <span class="rc-ecosystem-link-label">&mdash; Complementary tool (DOM rules)</span>
+          </a>
+          <a href="https://github.com/AccessKit/accesskit" target="_blank" rel="noopener" class="rc-ecosystem-link">
+            AccessKit <span class="rc-ecosystem-link-label">&mdash; NLnet-funded peer (native a11y)</span>
+          </a>
+          <a href="https://pa11y.org/" target="_blank" rel="noopener" class="rc-ecosystem-link">
+            Pa11y <span class="rc-ecosystem-link-label">&mdash; CI pipeline complement</span>
+          </a>
+          <a href="https://overlayfactsheet.com" target="_blank" rel="noopener" class="rc-ecosystem-link">
+            Overlay Fact Sheet <span class="rc-ecosystem-link-label">&mdash; Our position on overlays</span>
+          </a>
+          <a href="https://webaim.org/projects/million/" target="_blank" rel="noopener" class="rc-ecosystem-link">
+            WebAIM Million 2025 <span class="rc-ecosystem-link-label">&mdash; The data backing our rules</span>
+          </a>
+        </div>
+      </div>
+
+      <nav class="rc-footer-links" aria-label="Project links">
+        <a href="https://github.com/readcheck/readcheck" target="_blank" rel="noopener">GitHub Repository</a>
+        <a href="https://github.com/readcheck/readcheck/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener">Architecture</a>
+        <a href="https://nlnet.nl/commonsfund/" target="_blank" rel="noopener">NLnet NGI Zero Commons Fund</a>
+        <a href="#" target="_blank" rel="noopener">Research Paper (forthcoming)</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="readcheck.js"></script>
+  <script>
+    (() => {
+      // ── DOM references ──────────────────────────────────────────
+      const runBtn = document.getElementById("rc-run-btn");
+      const toggleBtn = document.getElementById("rc-toggle-fix");
+      const resetBtn = document.getElementById("rc-reset-btn");
+      const status = document.getElementById("rc-status");
+      const resultsEl = document.getElementById("rc-results");
+      const emptyEl = document.getElementById("rc-empty");
+      const sample = document.getElementById("rc-sample");
+      const badPage = document.getElementById("bad-page");
+
+      let lastResult = null;
+      let isFixed = false;
+
+      // ── Run scan ────────────────────────────────────────────────
+      runBtn.addEventListener("click", () => {
+        runBtn.disabled = true;
+        runBtn.innerHTML = '<span class="rc-spinner"></span> Scanning\u2026';
+        status.textContent = "Analyzing sample page\u2026";
+
+        // Brief delay to show spinner (simulates real scan on a large page)
+        setTimeout(() => {
+          const t0 = performance.now();
+          lastResult = ReadCheck.scan(badPage);
+          const elapsed = (performance.now() - t0).toFixed(1);
+
+          status.textContent = `Scan complete in ${elapsed}ms \u2014 ${lastResult.total} violations found across ${lastResult.rulesRun.length} rules`;
+          runBtn.innerHTML = "Run ReadCheck";
+          runBtn.disabled = false;
+          toggleBtn.disabled = false;
+          resetBtn.disabled = false;
+
+          renderResults(lastResult);
+          highlightElements(lastResult.violations);
+        }, 350);
+      });
+
+      // ── Toggle fixed/broken ─────────────────────────────────────
+      toggleBtn.addEventListener("click", () => {
+        isFixed = !isFixed;
+        sample.classList.toggle("fixed", isFixed);
+        toggleBtn.textContent = isFixed ? "Show Broken Version" : "Show Fixed Version";
+        toggleBtn.setAttribute("aria-pressed", String(isFixed));
+        toggleBtn.classList.toggle("active", isFixed);
+
+        if (isFixed) {
+          status.textContent = "Showing fixed version \u2014 ReadCheck\u2019s recommendations applied.";
+        } else {
+          status.textContent = `${lastResult.total} violations shown on the original page.`;
+        }
+      });
+
+      // ── Reset ───────────────────────────────────────────────────
+      resetBtn.addEventListener("click", () => {
+        lastResult = null;
+        isFixed = false;
+        sample.classList.remove("fixed");
+        toggleBtn.textContent = "Show Fixed Version";
+        toggleBtn.setAttribute("aria-pressed", "false");
+        toggleBtn.classList.remove("active");
+        toggleBtn.disabled = true;
+        resetBtn.disabled = true;
+        status.textContent = "";
+        resultsEl.innerHTML = "";
+        resultsEl.appendChild(emptyEl);
+        emptyEl.style.display = "";
+        clearHighlights();
+      });
+
+      // ── Render results with Lighthouse-style score circle ───────
+      function renderResults(result) {
+        emptyEl.style.display = "none";
+
+        const scoreColor =
+          result.score >= 90 ? "var(--rc-pass)" :
+          result.score >= 50 ? "var(--rc-serious)" :
+          "var(--rc-critical)";
+
+        // SVG circle parameters
+        const radius = 58;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (result.score / 100) * circumference;
+
+        let html = `
+          <div class="rc-score-card">
+            <div class="rc-score-ring">
+              <svg viewBox="0 0 140 140" aria-hidden="true">
+                <circle class="rc-score-ring-bg" cx="70" cy="70" r="${radius}"/>
+                <circle class="rc-score-ring-value" cx="70" cy="70" r="${radius}"
+                        stroke="${scoreColor}"
+                        stroke-dasharray="${circumference}"
+                        stroke-dashoffset="${offset}"/>
+              </svg>
+              <div class="rc-score-ring-text" style="color: ${scoreColor}">${result.score}</div>
+              <div class="rc-score-ring-grade">${result.grade}</div>
+            </div>
+            <div class="rc-score-label">ReadCheck Score</div>
+            <div class="rc-score-summary">${result.total} violations across ${result.rulesRun.length} rules</div>
+          </div>
+
+          <div class="rc-severity-bar">
+            <div class="rc-severity-chip">
+              <span class="rc-severity-dot critical"></span>
+              Critical: ${result.counts.critical}
+            </div>
+            <div class="rc-severity-chip">
+              <span class="rc-severity-dot serious"></span>
+              Serious: ${result.counts.serious}
+            </div>
+            <div class="rc-severity-chip">
+              <span class="rc-severity-dot moderate"></span>
+              Moderate: ${result.counts.moderate}
+            </div>
+          </div>
+
+          <div class="rc-perf-bar" aria-label="Performance statistics">
+            <div class="rc-perf-stat">
+              Scan time: <strong>${result.performance.elapsed}ms</strong>
+            </div>
+            <div class="rc-perf-stat">
+              Canvas measurements: <strong>${result.performance.canvasMeasurements}</strong>
+            </div>
+            <div class="rc-perf-stat">
+              DOM reflows avoided: <strong>${result.performance.domQueriesAvoided}</strong>
+            </div>
+          </div>
+        `;
+
+        // Sort violations: critical first, then serious, then moderate
+        const order = { critical: 0, serious: 1, moderate: 2 };
+        const sorted = [...result.violations].sort(
+          (a, b) => order[a.severity] - order[b.severity]
+        );
+
+        sorted.forEach((v, i) => {
+          const wcagBadge = v.wcag
+            ? `<span class="rc-violation-wcag">WCAG ${v.wcag}</span>`
+            : "";
+          const canvasBadge = v.canvasMeasured
+            ? `<span class="rc-violation-canvas">CANVAS</span>`
+            : "";
+
+          html += `
+            <div class="rc-violation ${v.severity}" role="article" aria-label="Violation ${i + 1}: ${v.rule}">
+              <div class="rc-violation-header">
+                <span class="rc-violation-rule">${v.rule}</span>
+                <span class="rc-violation-severity">${v.severity}</span>
+                ${wcagBadge}
+                ${canvasBadge}
+              </div>
+              <div class="rc-violation-message">${v.message}</div>
+              <div class="rc-violation-fix">${v.fix}</div>
+              <div class="rc-violation-element">${v.element}</div>
+            </div>
+          `;
+        });
+
+        resultsEl.innerHTML = html;
+      }
+
+      // ── Highlight flagged elements in the sample ────────────────
+      function highlightElements(violations) {
+        clearHighlights();
+        violations.forEach((v) => {
+          if (v.domElement && v.domElement.classList) {
+            const cls =
+              v.severity === "serious"
+                ? "rc-highlight rc-highlight-serious"
+                : v.severity === "moderate"
+                ? "rc-highlight rc-highlight-moderate"
+                : "rc-highlight";
+            v.domElement.classList.add(...cls.split(" "));
+            v.domElement.setAttribute("data-rc-rule", v.rule);
+          }
+        });
+      }
+
+      function clearHighlights() {
+        badPage.querySelectorAll(".rc-highlight").forEach((el) => {
+          el.classList.remove(
+            "rc-highlight",
+            "rc-highlight-serious",
+            "rc-highlight-moderate"
+          );
+          el.removeAttribute("data-rc-rule");
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

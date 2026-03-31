@@ -1,0 +1,81 @@
+{
+  "name": "@readcheck/core",
+  "version": "0.0.1",
+  "description": "Open-source accessibility measurement engine powered by canvas-based text analysis. Detects, scores, and reports WCAG violations with novel canvas-measurement rules impossible in DOM-only tools.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js"
+    },
+    "./measurement": {
+      "import": "./src/measurement/measure.js"
+    },
+    "./rules": {
+      "import": "./src/detection/rules/index.js"
+    }
+  },
+  "bin": {
+    "readcheck": "./cli/readcheck.js"
+  },
+  "scripts": {
+    "test": "node --test test/**/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/**/*.test.js",
+    "test:watch": "node --test --watch test/**/*.test.js",
+    "lint": "eslint src/ test/ cli/",
+    "lint:fix": "eslint --fix src/ test/ cli/",
+    "build": "echo 'No build step — ships as ES modules. See ARCHITECTURE.md'",
+    "demo": "open demo/index.html",
+    "prepublishOnly": "npm test && npm run lint",
+    "benchmark": "node test/benchmark/measure-perf.js"
+  },
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "wcag",
+    "wcag22",
+    "measurement",
+    "canvas",
+    "pretext",
+    "audit",
+    "cognitive",
+    "readability",
+    "elderly",
+    "age-inclusive",
+    "axe-core",
+    "european-accessibility-act",
+    "eaa",
+    "nlnet",
+    "ngi-zero",
+    "open-source",
+    "overlay-alternative"
+  ],
+  "author": "Rafael Garcia Vaz de Lima",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/readcheck/readcheck.git"
+  },
+  "bugs": {
+    "url": "https://github.com/readcheck/readcheck/issues"
+  },
+  "homepage": "https://github.com/readcheck/readcheck#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "src/",
+    "cli/",
+    "demo/",
+    "LICENSE",
+    "README.md",
+    "ARCHITECTURE.md"
+  ],
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {},
+  "funding": {
+    "type": "foundation",
+    "url": "https://nlnet.nl/commonsfund/"
+  }
+}
